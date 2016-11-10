@@ -1,25 +1,28 @@
-(function(){
+(function () {
 
-  function executeTarget(e){
-    var node = this;
-    var event = node.event;
-    var method = node.method;
-    var args = node.xtag.args || [];
-    var targets = xtag.query(document, node.target);
-    (targets[0] ? targets : [node]).forEach(function(target){
-      if (target[method]) target[method].apply(target, args);
-      if (event) xtag.fireEvent(target, event, {
-        detail: {
-          actionElement: node
-        }
+  function executeTarget(e) {
+    if (!this.disabled) {
+      var node = this;
+      var event = node.event;
+      var method = node.method;
+      var args = node.xtag.args || [];
+      var targets = xtag.query(document, node.target);
+      (targets[0] ? targets : [node]).forEach(function (target) {
+        if (target[method]) target[method].apply(target, args);
+        if (event) xtag.fireEvent(target, event, {
+          detail: {
+            actionElement: node
+          }
+        });
       });
-    });
+    }
   }
 
   var replacer = /'/g;
   var whitesplit = /\s+/g;
   xtag.register('x-action', {
     accessors: {
+      disabled: { attribute: {} },
       event: { attribute: {} },
       target: { attribute: {} },
       method: { attribute: {} },
@@ -27,10 +30,10 @@
         attribute: {
           def: 'tap'
         },
-        set: function(val){
+        set: function (val) {
           if (this.xtag.triggers) xtag.removeEvents(this, this.xtag.triggers);
           var triggers = {};
-          (val || '').trim().split(whitesplit).forEach(function(key){
+          (val || '').trim().split(whitesplit).forEach(function (key) {
             triggers[key] = executeTarget;
           });
           this.xtag.triggers = xtag.addEvents(this, triggers);
@@ -38,7 +41,7 @@
       },
       args: {
         attribute: {},
-        set: function(args){
+        set: function (args) {
           this.xtag.args = JSON.parse('[' + args.replace(replacer, '"') + ']');
         }
       },
@@ -47,5 +50,4 @@
       execute: executeTarget
     }
   });
-
 })();
